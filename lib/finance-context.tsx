@@ -19,6 +19,7 @@ import {
   type Investimento,
   type Insight,
 } from '@/lib/mock-data'
+import { useAuth } from '@/lib/auth-context'
 
 export type UserProfile = {
   name: string
@@ -77,30 +78,39 @@ type FinanceContextType = {
 
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined)
 
-const STORAGE_KEY = 'finance_ai_data_v2'
-
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
+  const { currentUser, updateProfile } = useAuth()
   const [isLoaded, setIsLoaded] = useState(false)
   const [hideValues, setHideValues] = useState(false)
   const [user, setUser] = useState<UserProfile>({
-    ...initialUser,
+    name: '',
+    email: '',
+    initials: '',
     avatarUrl: '',
-    whatsappNumber: '+55 11 98765-4321',
-    whatsappConnected: true,
+    whatsappNumber: '',
+    whatsappConnected: false,
   })
-  const [receitas, setReceitas] = useState<Transacao[]>(initialReceitas)
-  const [despesas, setDespesas] = useState<Transacao[]>(initialDespesas)
-  const [dividas, setDividas] = useState<Divida[]>(initialDividas)
-  const [contasFixas, setContasFixas] = useState<ContaFixa[]>(initialContasFixas)
-  const [metas, setMetas] = useState<Meta[]>(initialMetas)
-  const [cartoes, setCartoes] = useState<Cartao[]>(initialCartoes)
-  const [investimentos, setInvestimentos] = useState<Investimento[]>(initialInvestimentos)
-  const [insights, setInsights] = useState<Insight[]>(initialInsights)
+  const [receitas, setReceitas] = useState<Transacao[]>([])
+  const [despesas, setDespesas] = useState<Transacao[]>([])
+  const [dividas, setDividas] = useState<Divida[]>([])
+  const [contasFixas, setContasFixas] = useState<ContaFixa[]>([])
+  const [metas, setMetas] = useState<Meta[]>([])
+  const [cartoes, setCartoes] = useState<Cartao[]>([])
+  const [investimentos, setInvestimentos] = useState<Investimento[]>([])
+  const [insights, setInsights] = useState<Insight[]>([])
 
-  // Load from local storage
+  const STORAGE_KEY = currentUser ? `finance_ai_data_${currentUser.email}` : ''
+
+  // Load from local storage on user change
   useEffect(() => {
+    if (!currentUser) {
+      setIsLoaded(false)
+      return
+    }
+
     try {
-      const stored = localStorage.getItem(STORAGE_KEY)
+      const userKey = `finance_ai_data_${currentUser.email}`
+      const stored = localStorage.getItem(userKey)
       if (stored) {
         const parsed = JSON.parse(stored)
         if (parsed.user) setUser(parsed.user)
@@ -113,17 +123,51 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (parsed.investimentos) setInvestimentos(parsed.investimentos)
         if (parsed.insights) setInsights(parsed.insights)
         if (parsed.hideValues !== undefined) setHideValues(parsed.hideValues)
+      } else {
+        // First load for this user, copy mock templates so dashboard is not empty
+        const initialProfile = {
+          name: currentUser.name,
+          email: currentUser.email,
+          initials: currentUser.initials,
+          avatarUrl: currentUser.avatarUrl || '',
+          whatsappNumber: currentUser.whatsappNumber || '+55 11 98765-4321',
+          whatsappConnected: currentUser.whatsappConnected || true,
+        }
+        setUser(initialProfile)
+        setReceitas(initialReceitas)
+        setDespesas(initialDespesas)
+        setDividas(initialDividas)
+        setContasFixas(initialContasFixas)
+        setMetas(initialMetas)
+        setCartoes(initialCartoes)
+        setInvestimentos(initialInvestimentos)
+        setInsights(initialInsights)
+        
+        // Save initial template
+        const dataToSave = {
+          user: initialProfile,
+          receitas: initialReceitas,
+          despesas: initialDespesas,
+          dividas: initialDividas,
+          contasFixas: initialContasFixas,
+          metas: initialMetas,
+          cartoes: initialCartoes,
+          investimentos: initialInvestimentos,
+          insights: initialInsights,
+          hideValues: false,
+        }
+        localStorage.setItem(userKey, JSON.stringify(dataToSave))
       }
     } catch (e) {
       console.error('Erro ao carregar dados do localStorage:', e)
     } finally {
       setIsLoaded(true)
     }
-  }, [])
+  }, [currentUser])
 
   // Save to local storage on changes
   useEffect(() => {
-    if (!isLoaded) return
+    if (!isLoaded || !STORAGE_KEY) return
     try {
       const dataToSave = {
         user,
@@ -141,10 +185,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error('Erro ao salvar dados no localStorage:', e)
     }
-  }, [isLoaded, user, receitas, despesas, dividas, contasFixas, metas, cartoes, investimentos, insights, hideValues])
+  }, [isLoaded, STORAGE_KEY, user, receitas, despesas, dividas, contasFixas, metas, cartoes, investimentos, insights, hideValues])
 
   // Actions
   const updateUser = (data: Partial<UserProfile>) => {
+    updateProfile(data)
     setUser((prev) => {
       const updated = { ...prev, ...data }
       if (data.name) {

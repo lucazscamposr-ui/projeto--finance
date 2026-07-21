@@ -29,7 +29,9 @@ export const viewport: Viewport = {
   userScalable: false,
 }
 
+import { AuthProvider } from '@/lib/auth-context'
 import { FinanceProvider } from '@/lib/finance-context'
+import { AuthGuard } from '@/components/auth/auth-guard'
 
 export default function RootLayout({
   children,
@@ -39,9 +41,13 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`dark ${geistSans.variable} ${geistMono.variable}`}>
       <body className="bg-background font-sans antialiased">
-        <FinanceProvider>
-          <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
-        </FinanceProvider>
+        <AuthProvider>
+          <FinanceProvider>
+            <AuthGuard>
+              <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
+            </AuthGuard>
+          </FinanceProvider>
+        </AuthProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

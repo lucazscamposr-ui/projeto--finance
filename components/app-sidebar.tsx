@@ -18,10 +18,11 @@ import {
 } from '@/components/ui/sidebar'
 import { BrandLogo } from '@/components/brand-logo'
 import { navGroups } from '@/lib/nav'
-import { user } from '@/lib/mock-data'
+import { useAuth } from '@/lib/auth-context'
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const { currentUser, logout } = useAuth()
 
   return (
     <Sidebar collapsible="icon" className="border-sidebar-border">
@@ -63,11 +64,9 @@ export function AppSidebar() {
       <SidebarFooter className="p-3">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Sair">
-              <Link href="/login">
-                <LogOut />
-                <span>Sair ({user.name.split(' ')[0]})</span>
-              </Link>
+            <SidebarMenuButton tooltip="Sair" onClick={logout} className="cursor-pointer text-destructive hover:text-destructive hover:bg-destructive/10">
+              <LogOut className="size-4" />
+              <span>Sair ({currentUser?.name ? currentUser.name.split(' ')[0] : 'Usuário'})</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
