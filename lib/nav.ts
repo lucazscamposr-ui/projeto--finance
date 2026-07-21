@@ -11,8 +11,6 @@ import {
   LineChart,
   FileBarChart,
   Sparkles,
-  User,
-  MessageSquare,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -53,12 +51,6 @@ export const navGroups: NavGroup[] = [
       { title: 'Metas', href: '/metas', icon: Target },
       { title: 'Investimentos', href: '/investimentos', icon: LineChart },
       { title: 'Relatórios', href: '/relatorios', icon: FileBarChart },
-    ],
-  },
-  {
-    label: 'Configurações',
-    items: [
-      { title: 'Meu Perfil', href: '/perfil', icon: User },
     ],
   },
 ]

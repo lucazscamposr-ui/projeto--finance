@@ -1,10 +1,5 @@
-export function formatCurrency(
-  value: number,
-  options?: { compact?: boolean; hideValues?: boolean }
-): string {
-  if (options?.hideValues) {
-    return 'R$ •••••'
-  }
+/** Formata um número como moeda brasileira (BRL). */
+export function formatCurrency(value: number, options?: { compact?: boolean }): string {
   if (options?.compact && Math.abs(value) >= 1000) {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',

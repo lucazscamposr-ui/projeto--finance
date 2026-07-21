@@ -1,6 +1,4 @@
-'use client'
-
-import { MoreHorizontal, CheckCircle, Clock, Trash2 } from 'lucide-react'
+import { MoreHorizontal } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -13,19 +11,8 @@ import {
 import { cn } from '@/lib/utils'
 import { formatCurrency, formatDayMonth } from '@/lib/format'
 import type { Transacao } from '@/lib/mock-data'
-import { useFinance } from '@/lib/finance-context'
 
 export function TransactionsTable({ items }: { items: Transacao[] }) {
-  const { toggleTransacaoStatus, deleteTransacao, hideValues } = useFinance()
-
-  if (items.length === 0) {
-    return (
-      <Card className="p-8 text-center text-sm text-muted-foreground">
-        Nenhuma transação encontrada.
-      </Card>
-    )
-  }
-
   return (
     <Card className="overflow-hidden py-0">
       <div className="overflow-x-auto">
@@ -43,7 +30,7 @@ export function TransactionsTable({ items }: { items: Transacao[] }) {
           </thead>
           <tbody>
             {items.map((t) => (
-              <tr key={t.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/40 transition-colors">
+              <tr key={t.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/40">
                 <td className="px-4 py-3 font-medium">{t.nome}</td>
                 <td className="px-4 py-3 text-muted-foreground">{t.categoria}</td>
                 <td className="hidden px-4 py-3 text-muted-foreground sm:table-cell">{t.conta}</td>
@@ -54,33 +41,23 @@ export function TransactionsTable({ items }: { items: Transacao[] }) {
                   <Badge
                     variant="outline"
                     className={cn(
-                      'text-xs cursor-pointer select-none',
+                      'text-xs',
                       t.status === 'pago'
-                        ? 'border-success/30 bg-success/10 text-success hover:bg-success/20'
-                        : 'border-warning/30 bg-warning/10 text-warning hover:bg-warning/20'
+                        ? 'border-success/30 bg-success/10 text-success'
+                        : 'border-warning/30 bg-warning/10 text-warning',
                     )}
-                    onClick={() => toggleTransacaoStatus(t.id, t.tipo)}
-                    title="Clique para alternar status"
                   >
-                    {t.status === 'pago' ? (
-                      <span className="flex items-center gap-1">
-                        <CheckCircle className="size-3" /> {t.tipo === 'receita' ? 'Recebido' : 'Pago'}
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        <Clock className="size-3" /> {t.tipo === 'receita' ? 'A receber' : 'Pendente'}
-                      </span>
-                    )}
+                    {t.status === 'pago' ? 'Pago' : 'Pendente'}
                   </Badge>
                 </td>
                 <td
                   className={cn(
                     'px-4 py-3 text-right font-semibold tabular-nums',
-                    t.tipo === 'receita' ? 'text-success' : 'text-destructive'
+                    t.tipo === 'receita' ? 'text-success' : 'text-destructive',
                   )}
                 >
                   {t.tipo === 'receita' ? '+' : '-'}
-                  {formatCurrency(t.valor, { hideValues })}
+                  {formatCurrency(t.valor)}
                 </td>
                 <td className="px-2 py-3">
                   <DropdownMenu>
@@ -90,15 +67,9 @@ export function TransactionsTable({ items }: { items: Transacao[] }) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => toggleTransacaoStatus(t.id, t.tipo)}>
-                        Alternar para {t.status === 'pago' ? 'Pendente' : 'Pago'}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onClick={() => deleteTransacao(t.id, t.tipo)}
-                      >
-                        <Trash2 className="size-4 mr-2" /> Excluir
-                      </DropdownMenuItem>
+                      <DropdownMenuItem>Editar</DropdownMenuItem>
+                      <DropdownMenuItem>Duplicar</DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive">Excluir</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </td>

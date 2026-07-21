@@ -51,8 +51,8 @@ export default function LoginPage() {
       </div>
 
       {/* Formulário */}
-      <div className="flex items-center justify-center p-6 bg-background/50 backdrop-blur-sm">
-        <div className="w-full max-w-md">
+      <div className="flex items-center justify-center p-6">
+        <div className="w-full max-w-sm">
           <div className="mb-8 flex items-center justify-center gap-2.5 lg:hidden">
             <BrandLogo />
             <span className="text-lg font-semibold tracking-tight">Finance AI</span>

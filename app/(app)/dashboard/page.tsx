@@ -1,5 +1,3 @@
-'use client'
-
 import {
   ArrowDownCircle,
   ArrowUpCircle,
@@ -7,10 +5,8 @@ import {
   Sparkles,
   Wallet,
   CalendarClock,
-  Plus,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
 import { PageHeader } from '@/components/page-header'
 import { StatCard } from '@/components/dashboard/stat-card'
 import { OverviewChart } from '@/components/dashboard/overview-chart'
@@ -18,77 +14,50 @@ import { CategoryChart } from '@/components/dashboard/category-chart'
 import { InsightList } from '@/components/dashboard/insight-list'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { AddTransactionModal } from '@/components/modals/add-transaction-modal'
-import { useFinance } from '@/lib/finance-context'
+import { summary, proximos, insights, user } from '@/lib/mock-data'
 import { formatCurrency, formatDate } from '@/lib/format'
-import { proximos } from '@/lib/mock-data'
 
 export default function DashboardPage() {
-  const {
-    user,
-    saldoDisponivel,
-    receitasMes,
-    despesasMes,
-    economiaMes,
-    patrimonio,
-    variacaoSaldo,
-    variacaoDespesas,
-    insights,
-    receitas,
-    despesas,
-    hideValues,
-  } = useFinance()
-
-  const [modalOpen, setModalOpen] = useState(false)
-
-  const poupancaPct = receitasMes > 0 ? Math.round((economiaMes / receitasMes) * 100) : 0
-
   return (
-    <div className="mx-auto max-w-7xl space-y-4">
+    <div className="mx-auto max-w-7xl">
       <PageHeader
         title={`Olá, ${user.name.split(' ')[0]}`}
-        description="Aqui está o resumo em tempo real da sua vida financeira hoje."
-        action={
-          <Button className="glow-primary" onClick={() => setModalOpen(true)}>
-            <Plus className="size-4" />
-            Nova transação
-          </Button>
-        }
+        description="Aqui está o resumo da sua vida financeira hoje."
       />
 
       {/* Cards principais */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Saldo disponível"
-          value={formatCurrency(saldoDisponivel, { hideValues })}
+          value={formatCurrency(summary.saldoDisponivel)}
           icon={Wallet}
-          trend={variacaoSaldo}
+          trend={summary.variacaoSaldo}
           hint="vs. mês passado"
           accent
         />
         <StatCard
           label="Receitas do mês"
-          value={formatCurrency(receitasMes, { hideValues })}
+          value={formatCurrency(summary.receitasMes)}
           icon={ArrowUpCircle}
-          hint={`${receitas.length} lançamentos`}
+          hint="5 lançamentos"
         />
         <StatCard
           label="Despesas do mês"
-          value={formatCurrency(despesasMes, { hideValues })}
+          value={formatCurrency(summary.despesasMes)}
           icon={ArrowDownCircle}
-          trend={variacaoDespesas}
-          hint={`${despesas.length} lançamentos`}
+          trend={summary.variacaoDespesas}
+          hint="vs. mês passado"
         />
         <StatCard
           label="Economia do mês"
-          value={formatCurrency(economiaMes, { hideValues })}
+          value={formatCurrency(summary.economiaMes)}
           icon={PiggyBank}
-          hint={`${poupancaPct}% da renda`}
+          hint="18% da renda"
         />
       </div>
 
       {/* Gráficos */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <OverviewChart />
         </div>
@@ -96,7 +65,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Próximos eventos + Assistente */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Próximos eventos</CardTitle>
@@ -113,7 +82,7 @@ export default function DashboardPage() {
                 </p>
               </div>
               <span className="text-sm font-semibold text-success tabular-nums">
-                +{formatCurrency(proximos.recebimento.valor, { hideValues })}
+                +{formatCurrency(proximos.recebimento.valor)}
               </span>
             </div>
             <div className="flex items-center gap-3 rounded-lg border border-border p-3">
@@ -127,13 +96,13 @@ export default function DashboardPage() {
                 </p>
               </div>
               <span className="text-sm font-semibold text-destructive tabular-nums">
-                -{formatCurrency(proximos.pagamento.valor, { hideValues })}
+                -{formatCurrency(proximos.pagamento.valor)}
               </span>
             </div>
             <div className="rounded-lg border border-primary/30 bg-primary/[0.04] p-3">
               <p className="text-xs text-muted-foreground">Patrimônio total</p>
               <p className="mt-0.5 text-xl font-semibold tabular-nums">
-                {formatCurrency(patrimonio, { hideValues })}
+                {formatCurrency(summary.patrimonio)}
               </p>
             </div>
           </CardContent>
@@ -154,8 +123,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-
-      <AddTransactionModal open={modalOpen} onOpenChange={setModalOpen} />
     </div>
   )
 }

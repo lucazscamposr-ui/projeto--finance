@@ -138,12 +138,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground transition-all duration-300;
-    background-image: var(--wallpaper-url, none);
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    @apply bg-background text-foreground;
   }
 }
 
