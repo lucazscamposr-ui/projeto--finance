@@ -26,8 +26,6 @@ export type UserProfile = {
   email: string
   initials: string
   avatarUrl?: string
-  whatsappNumber?: string
-  whatsappConnected?: boolean
 }
 
 type FinanceContextType = {
@@ -56,6 +54,7 @@ type FinanceContextType = {
   toggleHideValues: () => void
   addReceita: (data: Omit<Transacao, 'id' | 'tipo'>) => void
   addDespesa: (data: Omit<Transacao, 'id' | 'tipo'>) => void
+  updateTransacao: (id: string, tipo: 'receita' | 'despesa', data: Partial<Omit<Transacao, 'id' | 'tipo'>>) => void
   toggleTransacaoStatus: (id: string, tipo: 'receita' | 'despesa') => void
   deleteTransacao: (id: string, tipo: 'receita' | 'despesa') => void
   addDivida: (data: Omit<Divida, 'id' | 'pago'>) => void
@@ -87,8 +86,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     email: '',
     initials: '',
     avatarUrl: '',
-    whatsappNumber: '',
-    whatsappConnected: false,
   })
   const [receitas, setReceitas] = useState<Transacao[]>([])
   const [despesas, setDespesas] = useState<Transacao[]>([])
@@ -124,36 +121,34 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (parsed.insights) setInsights(parsed.insights)
         if (parsed.hideValues !== undefined) setHideValues(parsed.hideValues)
       } else {
-        // First load for this user, copy mock templates so dashboard is not empty
+        // First load for this user, start empty
         const initialProfile = {
           name: currentUser.name,
           email: currentUser.email,
           initials: currentUser.initials,
           avatarUrl: currentUser.avatarUrl || '',
-          whatsappNumber: currentUser.whatsappNumber || '+55 11 98765-4321',
-          whatsappConnected: currentUser.whatsappConnected || true,
         }
         setUser(initialProfile)
-        setReceitas(initialReceitas)
-        setDespesas(initialDespesas)
-        setDividas(initialDividas)
-        setContasFixas(initialContasFixas)
-        setMetas(initialMetas)
-        setCartoes(initialCartoes)
-        setInvestimentos(initialInvestimentos)
-        setInsights(initialInsights)
+        setReceitas([])
+        setDespesas([])
+        setDividas([])
+        setContasFixas([])
+        setMetas([])
+        setCartoes([])
+        setInvestimentos([])
+        setInsights([])
         
-        // Save initial template
+        // Save initial empty template
         const dataToSave = {
           user: initialProfile,
-          receitas: initialReceitas,
-          despesas: initialDespesas,
-          dividas: initialDividas,
-          contasFixas: initialContasFixas,
-          metas: initialMetas,
-          cartoes: initialCartoes,
-          investimentos: initialInvestimentos,
-          insights: initialInsights,
+          receitas: [],
+          despesas: [],
+          dividas: [],
+          contasFixas: [],
+          metas: [],
+          cartoes: [],
+          investimentos: [],
+          insights: [],
           hideValues: false,
         }
         localStorage.setItem(userKey, JSON.stringify(dataToSave))
@@ -221,7 +216,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   }, [despesas])
 
   const saldoDisponivel = useMemo(() => {
-    return Math.max(0, 4820.55 + (receitasPagas - despesasPagas))
+    return receitasPagas - despesasPagas
   }, [receitasPagas, despesasPagas])
 
   const totalInvestimentos = useMemo(() => {
@@ -261,6 +256,14 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       tipo: 'despesa',
     }
     setDespesas((prev) => [newItem, ...prev])
+  }
+
+  const updateTransacao = (id: string, tipo: 'receita' | 'despesa', data: Partial<Omit<Transacao, 'id' | 'tipo'>>) => {
+    if (tipo === 'receita') {
+      setReceitas((prev) => prev.map((r) => (r.id === id ? { ...r, ...data } : r)))
+    } else {
+      setDespesas((prev) => prev.map((d) => (d.id === id ? { ...d, ...data } : d)))
+    }
   }
 
   const toggleTransacaoStatus = (id: string, tipo: 'receita' | 'despesa') => {
@@ -416,15 +419,15 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   }
 
   const resetData = () => {
-    setUser({ ...initialUser, avatarUrl: '', whatsappNumber: '+55 11 98765-4321', whatsappConnected: true })
-    setReceitas(initialReceitas)
-    setDespesas(initialDespesas)
-    setDividas(initialDividas)
-    setContasFixas(initialContasFixas)
-    setMetas(initialMetas)
-    setCartoes(initialCartoes)
-    setInvestimentos(initialInvestimentos)
-    setInsights(initialInsights)
+    setUser({ ...initialUser, avatarUrl: '' })
+    setReceitas([])
+    setDespesas([])
+    setDividas([])
+    setContasFixas([])
+    setMetas([])
+    setCartoes([])
+    setInvestimentos([])
+    setInsights([])
     localStorage.removeItem(STORAGE_KEY)
   }
 
@@ -452,6 +455,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         toggleHideValues,
         addReceita,
         addDespesa,
+        updateTransacao,
         toggleTransacaoStatus,
         deleteTransacao,
         addDivida,

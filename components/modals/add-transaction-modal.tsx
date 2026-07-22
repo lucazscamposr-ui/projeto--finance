@@ -12,22 +12,24 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useFinance } from '@/lib/finance-context'
+import type { Transacao } from '@/lib/mock-data'
 
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   defaultType?: 'receita' | 'despesa'
+  initialData?: Transacao
 }
 
-export function AddTransactionModal({ open, onOpenChange, defaultType = 'despesa' }: Props) {
-  const { addReceita, addDespesa } = useFinance()
-  const [tipo, setTipo] = useState<'receita' | 'despesa'>(defaultType)
-  const [nome, setNome] = useState('')
-  const [valor, setValor] = useState('')
-  const [categoria, setCategoria] = useState('')
-  const [conta, setConta] = useState('Nubank')
-  const [data, setData] = useState(new Date().toISOString().split('T')[0])
-  const [status, setStatus] = useState<'pago' | 'pendente'>('pago')
+export function AddTransactionModal({ open, onOpenChange, defaultType = 'despesa', initialData }: Props) {
+  const { addReceita, addDespesa, updateTransacao } = useFinance()
+  const [tipo, setTipo] = useState<'receita' | 'despesa'>(initialData?.tipo || defaultType)
+  const [nome, setNome] = useState(initialData?.nome || '')
+  const [valor, setValor] = useState(initialData?.valor ? String(initialData.valor) : '')
+  const [categoria, setCategoria] = useState(initialData?.categoria || '')
+  const [conta, setConta] = useState(initialData?.conta || 'Nubank')
+  const [data, setData] = useState(initialData?.data || new Date().toISOString().split('T')[0])
+  const [status, setStatus] = useState<'pago' | 'pendente'>(initialData?.status || 'pago')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,16 +45,22 @@ export function AddTransactionModal({ open, onOpenChange, defaultType = 'despesa
       status,
     }
 
-    if (tipo === 'receita') {
-      addReceita(transactionData)
+    if (initialData) {
+      updateTransacao(initialData.id, tipo, transactionData)
     } else {
-      addDespesa(transactionData)
+      if (tipo === 'receita') {
+        addReceita(transactionData)
+      } else {
+        addDespesa(transactionData)
+      }
     }
 
     // Reset & close
-    setNome('')
-    setValor('')
-    setCategoria('')
+    if (!initialData) {
+      setNome('')
+      setValor('')
+      setCategoria('')
+    }
     onOpenChange(false)
   }
 
@@ -60,7 +68,7 @@ export function AddTransactionModal({ open, onOpenChange, defaultType = 'despesa
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Nova Movimentação</DialogTitle>
+          <DialogTitle>{initialData ? 'Editar Movimentação' : 'Nova Movimentação'}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="grid gap-4 py-2">

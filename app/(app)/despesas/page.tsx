@@ -1,12 +1,19 @@
+'use client'
+
+import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { PageHeader } from '@/components/page-header'
 import { TransactionsTable } from '@/components/transactions-table'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { despesas } from '@/lib/mock-data'
+import { useFinance } from '@/lib/finance-context'
+import { AddTransactionModal } from '@/components/modals/add-transaction-modal'
 import { formatCurrency } from '@/lib/format'
 
 export default function DespesasPage() {
+  const { despesas } = useFinance()
+  const [modalOpen, setModalOpen] = useState(false)
+
   const total = despesas.reduce((acc, d) => acc + d.valor, 0)
   const pago = despesas.filter((d) => d.status === 'pago').reduce((a, d) => a + d.valor, 0)
   const pendente = total - pago
@@ -17,7 +24,7 @@ export default function DespesasPage() {
         title="Despesas"
         description="Todas as suas saídas do mês."
         action={
-          <Button className="glow-primary">
+          <Button className="glow-primary" onClick={() => setModalOpen(true)}>
             <Plus className="size-4" />
             Nova despesa
           </Button>
@@ -50,6 +57,12 @@ export default function DespesasPage() {
       </div>
 
       <TransactionsTable items={despesas} />
+
+      <AddTransactionModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        defaultType="despesa"
+      />
     </div>
   )
 }

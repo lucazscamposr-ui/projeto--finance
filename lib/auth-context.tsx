@@ -7,8 +7,6 @@ export type AuthUser = {
   email: string
   avatarUrl?: string
   initials: string
-  whatsappNumber?: string
-  whatsappConnected?: boolean
 }
 
 export type ThemeSettings = {
@@ -67,8 +65,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               email: 'gustavo@financeai.app',
               passwordHash: defaultHashedPassword,
               avatarUrl: '',
-              whatsappNumber: '+55 11 98765-4321',
-              whatsappConnected: true,
             },
           ]
           localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(defaultUsers))
@@ -238,8 +234,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: user.email,
       avatarUrl: user.avatarUrl || '',
       initials: getInitials(user.name),
-      whatsappNumber: user.whatsappNumber || '',
-      whatsappConnected: user.whatsappConnected || false,
     }
 
     // Guardar sessão
@@ -273,8 +267,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       passwordHash: hashed,
       avatarUrl: '',
-      whatsappNumber: '',
-      whatsappConnected: false,
     }
 
     users.push(newUser)
@@ -286,8 +278,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: newUser.email,
       avatarUrl: '',
       initials: getInitials(newUser.name),
-      whatsappNumber: '',
-      whatsappConnected: false,
     }
 
     const duration = 24 * 60 * 60 * 1000 // 1 dia por padrão
@@ -353,8 +343,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name: updatedUser.name,
         email: updatedUser.email,
         avatarUrl: updatedUser.avatarUrl,
-        whatsappNumber: updatedUser.whatsappNumber,
-        whatsappConnected: updatedUser.whatsappConnected,
       }
       localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users))
     }

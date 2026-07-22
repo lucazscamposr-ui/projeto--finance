@@ -5,13 +5,8 @@ import {
   User,
   Mail,
   Camera,
-  MessageSquare,
-  Shield,
   CheckCircle,
-  QrCode,
-  Smartphone,
   Save,
-  Link2,
   Paintbrush,
   RefreshCw,
   Sparkles,
@@ -150,6 +145,14 @@ const WALLPAPER_PRESETS = [
     name: 'Dark Space',
     url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80',
   },
+  {
+    name: 'Neon City',
+    url: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=1200&auto=format&fit=crop&q=80',
+  },
+  {
+    name: 'Premium Gold',
+    url: 'https://images.unsplash.com/photo-1614850715649-1d0106293cb1?w=1200&auto=format&fit=crop&q=80',
+  },
 ]
 
 export default function PerfilPage() {
@@ -160,11 +163,7 @@ export default function PerfilPage() {
   const [name, setName] = useState(user.name)
   const [email, setEmail] = useState(user.email)
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || '')
-  const [whatsappNumber, setWhatsappNumber] = useState(user.whatsappNumber || '+55 11 98765-4321')
   const [savedSuccess, setSavedSuccess] = useState(false)
-
-  // WhatsApp connection modal state
-  const [qrModalOpen, setQrModalOpen] = useState(false)
 
   // Customizer local editing states
   const [customPrimary, setCustomPrimary] = useState(theme.primaryColor || '#728cf0')
@@ -181,15 +180,20 @@ export default function PerfilPage() {
       name,
       email,
       avatarUrl,
-      whatsappNumber,
     })
     setSavedSuccess(true)
     setTimeout(() => setSavedSuccess(false), 3000)
   }
 
-  const handleConnectWhatsapp = () => {
-    updateUser({ whatsappConnected: true })
-    setQrModalOpen(false)
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setAvatarUrl(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
   }
 
   const handleApplyPreset = (presetColors: typeof THEME_PRESETS[0]['colors']) => {
@@ -268,27 +272,6 @@ export default function PerfilPage() {
 
               <h3 className="text-lg font-semibold">{user.name || 'Usuário'}</h3>
               <p className="text-xs text-muted-foreground">{user.email || 'carregando...'}</p>
-
-              <div className="mt-4 flex flex-col gap-2 w-full">
-                <div className="rounded-lg border border-border bg-muted/40 p-3 text-left space-y-1">
-                  <span className="text-[11px] text-muted-foreground">Status do WhatsApp</span>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium">
-                      {user.whatsappConnected ? 'Conectado' : 'Desconectado'}
-                    </span>
-                    <Badge
-                      variant="outline"
-                      className={
-                        user.whatsappConnected
-                          ? 'border-success/40 bg-success/10 text-success'
-                          : 'border-destructive/40 bg-destructive/10 text-destructive'
-                      }
-                    >
-                      {user.whatsappConnected ? 'Ativo' : 'Pendente'}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
             </Card>
 
             {/* Edit Form */}
@@ -329,14 +312,15 @@ export default function PerfilPage() {
 
                   {/* Photo Options */}
                   <div className="grid gap-2">
-                    <Label>Foto de Perfil (URL ou Presets)</Label>
+                    <Label>Foto de Perfil (Envie do seu dispositivo)</Label>
                     <Input
-                      value={avatarUrl}
-                      onChange={(e) => setAvatarUrl(e.target.value)}
-                      placeholder="https://suafoto.com/avatar.jpg"
-                      className="mb-2"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="cursor-pointer text-xs"
                     />
-                    <p className="text-xs text-muted-foreground">Ou escolha uma foto de demonstração:</p>
+                    <p className="text-xs text-muted-foreground">Sua foto é salva no próprio navegador.</p>
+                    <p className="text-xs text-muted-foreground mt-2">Ou escolha uma foto de demonstração:</p>
                     <div className="flex gap-2 pt-1">
                       {AVATAR_PRESETS.map((preset, idx) => (
                         <button
@@ -378,61 +362,6 @@ export default function PerfilPage() {
               </CardContent>
             </Card>
           </div>
-
-          {/* WhatsApp Integration Section */}
-          <Card className="bg-card/65 backdrop-blur-md">
-            <CardHeader>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="grid size-9 place-items-center rounded-lg bg-success/15 text-success">
-                    <MessageSquare className="size-5" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-base">Integração com WhatsApp (Finance AI Bot)</CardTitle>
-                    <CardDescription className="text-xs">
-                      Envie áudios ou textos para registrar gastos instantaneamente pelo WhatsApp.
-                    </CardDescription>
-                  </div>
-                </div>
-
-                <Button
-                  className="bg-success text-success-foreground hover:bg-success/90 gap-2 text-xs w-full sm:w-auto"
-                  onClick={() => setQrModalOpen(true)}
-                >
-                  <QrCode className="size-4" />
-                  {user.whatsappConnected ? 'Reconectar WhatsApp' : 'Conectar WhatsApp'}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="rounded-lg border border-border p-3 space-y-1">
-                  <p className="text-xs font-semibold flex items-center gap-1.5">
-                    <Smartphone className="size-3.5 text-primary" /> Número Vinculado
-                  </p>
-                  <p className="text-sm text-muted-foreground">{whatsappNumber}</p>
-                </div>
-
-                <div className="rounded-lg border border-border p-3 space-y-1">
-                  <p className="text-xs font-semibold flex items-center gap-1.5">
-                    <Link2 className="size-3.5 text-success" /> Registro por Áudio
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Mande áudio: &quot;Gastei 45 no mercado&quot; que a IA categoriza.
-                  </p>
-                </div>
-
-                <div className="rounded-lg border border-border p-3 space-y-1">
-                  <p className="text-xs font-semibold flex items-center gap-1.5">
-                    <Shield className="size-3.5 text-warning" /> Alertas Automáticos
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Receba lembretes no dia de vencimento das contas fixas.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
 
         {/* Tab 2: Personalização */}
@@ -697,39 +626,6 @@ export default function PerfilPage() {
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* WhatsApp QR Modal */}
-      <Dialog open={qrModalOpen} onOpenChange={setQrModalOpen}>
-        <DialogContent className="sm:max-w-md text-center bg-card">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-center gap-2">
-              <MessageSquare className="size-5 text-success" />
-              Conectar WhatsApp Finance AI
-            </DialogTitle>
-            <DialogDescription className="text-xs">
-              Abra o WhatsApp no seu celular → Aparelhos Conectados → Conectar um aparelho
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="my-4 flex flex-col items-center justify-center p-4 rounded-xl border border-border bg-white text-black">
-            <div className="size-48 bg-black/5 p-2 rounded-lg flex items-center justify-center border-2 border-black">
-              <QrCode className="size-36 text-black" />
-            </div>
-            <p className="mt-3 text-xs font-semibold text-zinc-800">
-              Escaneie o QR Code acima para parear
-            </p>
-          </div>
-
-          <DialogFooter className="sm:justify-center">
-            <Button
-              className="bg-success text-success-foreground hover:bg-success/90 w-full"
-              onClick={handleConnectWhatsapp}
-            >
-              Simular Conexão Concluída
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

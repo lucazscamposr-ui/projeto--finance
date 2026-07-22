@@ -18,13 +18,14 @@ import {
 } from '@/components/ui/sidebar'
 import { BrandLogo } from '@/components/brand-logo'
 import { navGroups } from '@/lib/nav'
-import { user } from '@/lib/mock-data'
+import { useFinance } from '@/lib/finance-context'
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const { user } = useFinance()
 
   return (
-    <Sidebar collapsible="icon" className="border-sidebar-border">
+    <Sidebar className="border-sidebar-border">
       <SidebarHeader className="p-3">
         <Link href="/dashboard" className="flex items-center gap-2.5">
           <BrandLogo />
@@ -45,10 +46,10 @@ export function AppSidebar() {
                   const active = pathname === item.href
                   return (
                     <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
+                      <SidebarMenuButton asChild isActive={active} tooltip={item.title} className="min-h-[44px] py-2 md:min-h-9 md:py-1.5">
                         <Link href={item.href}>
-                          <item.icon />
-                          <span>{item.title}</span>
+                          <item.icon className="size-5 md:size-4" />
+                          <span className="text-sm md:text-sm">{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -63,10 +64,10 @@ export function AppSidebar() {
       <SidebarFooter className="p-3">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Sair">
+            <SidebarMenuButton asChild tooltip="Sair" className="min-h-[44px] md:min-h-9">
               <Link href="/login">
-                <LogOut />
-                <span>Sair ({user.name.split(' ')[0]})</span>
+                <LogOut className="size-5 md:size-4" />
+                <span>Sair {user?.name ? `(${user.name.split(' ')[0]})` : ''}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

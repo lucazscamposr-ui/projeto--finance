@@ -8,11 +8,20 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { ThemeToggle } from '@/components/theme-toggle'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { allNavItems } from '@/lib/nav'
-import { user } from '@/lib/mock-data'
+import { useFinance } from '@/lib/finance-context'
 
 export function AppTopbar() {
   const pathname = usePathname()
+  const { user, despesas, receitas } = useFinance()
   const current = allNavItems.find((i) => i.href === pathname)
   const title = current?.title ?? 'Dashboard'
 
@@ -31,14 +40,50 @@ export function AppTopbar() {
             aria-label="Pesquisar"
           />
         </div>
-        <Button variant="ghost" size="icon" aria-label="Notificações" className="relative">
-          <Bell className="size-4" />
-          <span className="absolute right-2 top-2 size-1.5 rounded-full bg-primary" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Notificações" className="relative">
+              <Bell className="size-4" />
+              {(despesas.length === 0 || receitas.length === 0) && (
+                <span className="absolute right-2 top-2 size-1.5 rounded-full bg-primary" />
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuLabel>Notificações</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {despesas.length === 0 && receitas.length === 0 ? (
+              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
+                <span className="font-medium text-sm">Bem-vindo(a)! 🎉</span>
+                <span className="text-xs text-muted-foreground">Que tal registrar sua primeira transação?</span>
+              </DropdownMenuItem>
+            ) : (
+              <>
+                {receitas.length === 0 && (
+                  <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
+                    <span className="font-medium text-sm">Adicione uma receita</span>
+                    <span className="text-xs text-muted-foreground">Você ainda não registrou nenhuma entrada.</span>
+                  </DropdownMenuItem>
+                )}
+                {despesas.length === 0 && (
+                  <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
+                    <span className="font-medium text-sm">Controle de gastos</span>
+                    <span className="text-xs text-muted-foreground">Lembre-se de registrar suas despesas.</span>
+                  </DropdownMenuItem>
+                )}
+                {despesas.length > 0 && receitas.length > 0 && (
+                  <DropdownMenuItem className="p-3 text-sm text-muted-foreground">
+                    Você não tem novas notificações no momento.
+                  </DropdownMenuItem>
+                )}
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <ThemeToggle />
         <Avatar className="size-8 border border-border">
           <AvatarFallback className="bg-primary/15 text-xs font-medium text-primary">
-            {user.initials}
+            {user.initials || 'U'}
           </AvatarFallback>
         </Avatar>
       </div>

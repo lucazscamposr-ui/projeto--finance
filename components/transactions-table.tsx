@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { MoreHorizontal } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -8,11 +9,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { AddTransactionModal } from '@/components/modals/add-transaction-modal'
+import { useFinance } from '@/lib/finance-context'
 import { cn } from '@/lib/utils'
 import { formatCurrency, formatDayMonth } from '@/lib/format'
 import type { Transacao } from '@/lib/mock-data'
 
 export function TransactionsTable({ items }: { items: Transacao[] }) {
+  const { deleteTransacao } = useFinance()
+  const [editingItem, setEditingItem] = useState<Transacao | null>(null)
   return (
     <Card className="overflow-hidden py-0">
       <div className="overflow-x-auto">
@@ -67,9 +72,12 @@ export function TransactionsTable({ items }: { items: Transacao[] }) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>Editar</DropdownMenuItem>
-                      <DropdownMenuItem>Duplicar</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">Excluir</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setEditingItem(t)}>
+                        Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive" onClick={() => deleteTransacao(t.id, t.tipo)}>
+                        Excluir
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </td>
@@ -78,6 +86,15 @@ export function TransactionsTable({ items }: { items: Transacao[] }) {
           </tbody>
         </table>
       </div>
+
+      {editingItem && (
+        <AddTransactionModal
+          open={!!editingItem}
+          onOpenChange={(open) => !open && setEditingItem(null)}
+          defaultType={editingItem.tipo}
+          initialData={editingItem}
+        />
+      )}
     </Card>
   )
 }

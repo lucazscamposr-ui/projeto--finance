@@ -1,12 +1,19 @@
+'use client'
+
+import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { PageHeader } from '@/components/page-header'
 import { TransactionsTable } from '@/components/transactions-table'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { receitas } from '@/lib/mock-data'
+import { useFinance } from '@/lib/finance-context'
+import { AddTransactionModal } from '@/components/modals/add-transaction-modal'
 import { formatCurrency } from '@/lib/format'
 
 export default function ReceitasPage() {
+  const { receitas } = useFinance()
+  const [modalOpen, setModalOpen] = useState(false)
+
   const total = receitas.reduce((acc, r) => acc + r.valor, 0)
   const recebido = receitas.filter((r) => r.status === 'pago').reduce((a, r) => a + r.valor, 0)
   const pendente = total - recebido
@@ -17,7 +24,7 @@ export default function ReceitasPage() {
         title="Receitas"
         description="Todas as suas entradas do mês."
         action={
-          <Button className="glow-primary">
+          <Button className="glow-primary" onClick={() => setModalOpen(true)}>
             <Plus className="size-4" />
             Nova receita
           </Button>
@@ -50,6 +57,12 @@ export default function ReceitasPage() {
       </div>
 
       <TransactionsTable items={receitas} />
+
+      <AddTransactionModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        defaultType="receita"
+      />
     </div>
   )
 }

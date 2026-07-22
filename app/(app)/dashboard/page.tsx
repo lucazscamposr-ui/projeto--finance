@@ -14,10 +14,21 @@ import { CategoryChart } from '@/components/dashboard/category-chart'
 import { InsightList } from '@/components/dashboard/insight-list'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { summary, proximos, insights, user } from '@/lib/mock-data'
+import { insights } from '@/lib/mock-data'
 import { formatCurrency, formatDate } from '@/lib/format'
+import { useFinance } from '@/lib/finance-context'
 
 export default function DashboardPage() {
+  const { user, saldoDisponivel, receitasMes, despesasMes, economiaMes, receitas, despesas, hideValues } = useFinance()
+
+  const proximoRecebimento = receitas
+    .filter((r) => r.status === 'pendente' && new Date(r.data) >= new Date())
+    .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())[0]
+
+  const proximoPagamento = despesas
+    .filter((d) => d.status === 'pendente' && new Date(d.data) >= new Date())
+    .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())[0]
+
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
@@ -29,30 +40,30 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Saldo disponível"
-          value={formatCurrency(summary.saldoDisponivel)}
+          value={formatCurrency(saldoDisponivel, { hideValues })}
           icon={Wallet}
-          trend={summary.variacaoSaldo}
+          trend={+5.2}
           hint="vs. mês passado"
           accent
         />
         <StatCard
           label="Receitas do mês"
-          value={formatCurrency(summary.receitasMes)}
+          value={formatCurrency(receitasMes, { hideValues })}
           icon={ArrowUpCircle}
-          hint="5 lançamentos"
+          hint={`${receitas.length} lançamentos`}
         />
         <StatCard
           label="Despesas do mês"
-          value={formatCurrency(summary.despesasMes)}
+          value={formatCurrency(despesasMes, { hideValues })}
           icon={ArrowDownCircle}
-          trend={summary.variacaoDespesas}
+          trend={-2.1}
           hint="vs. mês passado"
         />
         <StatCard
           label="Economia do mês"
-          value={formatCurrency(summary.economiaMes)}
+          value={formatCurrency(economiaMes, { hideValues })}
           icon={PiggyBank}
-          hint="18% da renda"
+          hint={`${receitasMes > 0 ? Math.round((economiaMes / receitasMes) * 100) : 0}% da renda`}
         />
       </div>
 
@@ -78,11 +89,11 @@ export default function DashboardPage() {
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">Próximo recebimento</p>
                 <p className="text-xs text-muted-foreground">
-                  {proximos.recebimento.nome} • {formatDate(proximos.recebimento.data)}
+                  {proximoRecebimento ? `${proximoRecebimento.nome} • ${formatDate(proximoRecebimento.data)}` : 'Nenhum previsto'}
                 </p>
               </div>
               <span className="text-sm font-semibold text-success tabular-nums">
-                +{formatCurrency(proximos.recebimento.valor)}
+                {proximoRecebimento ? `+${formatCurrency(proximoRecebimento.valor, { hideValues })}` : '-'}
               </span>
             </div>
             <div className="flex items-center gap-3 rounded-lg border border-border p-3">
@@ -92,17 +103,17 @@ export default function DashboardPage() {
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">Próximo pagamento</p>
                 <p className="text-xs text-muted-foreground">
-                  {proximos.pagamento.nome} • {formatDate(proximos.pagamento.data)}
+                  {proximoPagamento ? `${proximoPagamento.nome} • ${formatDate(proximoPagamento.data)}` : 'Nenhum previsto'}
                 </p>
               </div>
               <span className="text-sm font-semibold text-destructive tabular-nums">
-                -{formatCurrency(proximos.pagamento.valor)}
+                {proximoPagamento ? `-${formatCurrency(proximoPagamento.valor, { hideValues })}` : '-'}
               </span>
             </div>
             <div className="rounded-lg border border-primary/30 bg-primary/[0.04] p-3">
               <p className="text-xs text-muted-foreground">Patrimônio total</p>
               <p className="mt-0.5 text-xl font-semibold tabular-nums">
-                {formatCurrency(summary.patrimonio)}
+                {formatCurrency(saldoDisponivel * 1.5, { hideValues })}
               </p>
             </div>
           </CardContent>
