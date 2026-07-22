@@ -18,6 +18,10 @@ export const metadata: Metadata = {
     title: 'Finance AI',
     statusBarStyle: 'black-translucent',
   },
+  icons: {
+    icon: '/icon.jpg',
+    apple: '/apple-icon.jpg',
+  },
 }
 
 export const viewport: Viewport = {
