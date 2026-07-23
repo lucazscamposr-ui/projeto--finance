@@ -81,11 +81,13 @@ export function AppTopbar() {
           </DropdownMenuContent>
         </DropdownMenu>
         <ThemeToggle />
-        <Avatar className="size-8 border border-border">
-          <AvatarFallback className="bg-primary/15 text-xs font-medium text-primary">
-            {user.initials || 'U'}
-          </AvatarFallback>
-        </Avatar>
+        <Link href="/perfil" aria-label="Perfil">
+          <Avatar className="size-8 border border-border">
+            <AvatarFallback className="bg-primary/15 text-xs font-medium text-primary">
+              {user.initials || 'U'}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
       </div>
     </header>
   )
