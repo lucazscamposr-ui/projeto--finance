@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LogOut } from 'lucide-react'
+import { LogOut, ChevronLeft, ChevronRight } from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -109,9 +109,13 @@ export function AppSidebar() {
             <button
               onClick={() => toggleSidebar()}
               aria-label="Toggle sidebar"
-              className="rounded-md p-1 hover:bg-sidebar-accent"
+              className="rounded-md p-1 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground flex items-center justify-center"
             >
-              {isCollapsed ? '→' : '←'}
+              {isCollapsed ? (
+                <ChevronRight className="size-4" />
+              ) : (
+                <ChevronLeft className="size-4" />
+              )}
             </button>
             <Link href="/login" className="text-xs text-muted-foreground hover:text-foreground">Sair</Link>
           </div>
