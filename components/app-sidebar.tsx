@@ -23,7 +23,7 @@ import { useSidebar } from '@/components/ui/sidebar'
 
 export function AppSidebar() {
   const pathname = usePathname()
-  const { user } = useFinance()
+  const { user, despesas, receitas } = useFinance()
 
   // Redesigned sidebar: grouped sections, collapse toggle, badges
   const { toggleSidebar, state } = useSidebar()
