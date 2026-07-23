@@ -24,55 +24,77 @@ export function AppSidebar() {
   const pathname = usePathname()
   const { user } = useFinance()
 
+  // Simplified and reorganized sidebar layout for better UX
   return (
-    <Sidebar className="border-sidebar-border">
+    <Sidebar className="border-sidebar-border bg-sidebar/70">
       <SidebarHeader className="p-3">
-        <Link href="/dashboard" className="flex items-center gap-2.5">
+        <Link href="/dashboard" className="flex items-center gap-3">
           <BrandLogo />
-          <div className="grid group-data-[collapsible=icon]:hidden">
-            <span className="text-sm font-semibold leading-tight">Finance AI</span>
-            <span className="text-xs text-muted-foreground leading-tight">Assistente financeiro</span>
+          <div className="hidden md:flex flex-col leading-tight">
+            <span className="text-sm font-semibold">Finance AI</span>
+            <span className="text-xs text-muted-foreground">Assistente financeiro</span>
           </div>
         </Link>
       </SidebarHeader>
 
       <SidebarContent>
-        {navGroups.map((group) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => {
-                  const active = pathname === item.href
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={active} tooltip={item.title} className="min-h-[44px] py-2 md:min-h-9 md:py-1.5">
-                        <Link href={item.href}>
-                          <item.icon className="size-5 md:size-4" />
-                          <span className="text-sm md:text-sm">{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+        {/* Primary navigation */}
+        <div className="px-2 py-1">
+          <nav aria-label="Main navigation" className="space-y-1">
+            {navGroups.flatMap((group) => group.items).map((item) => {
+              const active = pathname === item.href
+              return (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild isActive={active} tooltip={item.title} className="flex items-center gap-3 p-2">
+                    <Link href={item.href} className="flex items-center gap-3 w-full">
+                      <item.icon className="size-5 text-primary" />
+                      <span className="text-sm">{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )
+            })}
+          </nav>
+        </div>
+
+        {/* Quick actions / grouped links */}
+        <div className="mt-3 border-t border-border/50 px-2 pt-3">
+          <SidebarGroupLabel className="text-xs">Movimentações</SidebarGroupLabel>
+          <SidebarMenu className="mt-1">
+            {navGroups
+              .filter((g) => g.label.toLowerCase().includes('movimenta'))
+              .flatMap((g) => g.items)
+              .slice(0, 6)
+              .map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild tooltip={item.title} className="flex items-center gap-3 p-2">
+                    <Link href={item.href} className="flex items-center gap-3 w-full">
+                      <item.icon className="size-5" />
+                      <span className="text-sm">{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+          </SidebarMenu>
+        </div>
       </SidebarContent>
 
       <SidebarFooter className="p-3">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Sair" className="min-h-[44px] md:min-h-9">
-              <Link href="/login">
-                <LogOut className="size-5 md:size-4" />
-                <span>Sair {user?.name ? `(${user.name.split(' ')[0]})` : ''}</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-primary/10 grid place-items-center text-primary text-sm font-medium">{user?.initials || 'U'}</div>
+            <div className="hidden md:block">
+              <div className="text-sm font-medium">{user?.name || 'Usuário'}</div>
+              <div className="text-xs text-muted-foreground">{user?.email || ''}</div>
+            </div>
+          </div>
+
+          <div>
+            <Link href="/login" className="text-xs text-muted-foreground hover:text-foreground">Sair</Link>
+          </div>
+        </div>
       </SidebarFooter>
+
       <SidebarRail />
     </Sidebar>
   )
