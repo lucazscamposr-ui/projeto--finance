@@ -1,3 +1,5 @@
+"use client"
+
 import { PageHeader } from '@/components/page-header'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
