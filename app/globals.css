@@ -139,6 +139,11 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Apply wallpaper when `--wallpaper-url` is present */
+    background-image: var(--wallpaper-url, none);
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
   }
 }
 

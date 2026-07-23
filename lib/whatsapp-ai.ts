@@ -16,6 +16,9 @@ export type ParsedTransaction = {
   conta: string
   confianca: number // 0–100 — quão confiante a IA está na interpretação
   mensagemOriginal: string
+  // Opcional: se a mensagem indica que é para pagar depois (dívida/parcelada)
+  registroComoDivida?: boolean
+  vencimento?: string // ISO date string or partial date extracted from text
 }
 
 export type WhatsAppMessage = {
@@ -115,6 +118,33 @@ export function parseMessage(body: string): ParsedTransaction | null {
       const nome = capitalizarPrimeira(descricao)
       const categoria = detectarCategoria(descricao, 'despesa')
 
+      // Detectar padrão de vencimento/ex.: "pra pagar dia 20/08/2026" ou "a pagar dia 20/08"
+      const vencRegex = /(?:pagar|pra pagar|a pagar|vencer|vencimento|vencimento em)\s*(?:no dia|dia)?\s*(\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?)/i
+      const vencMatch = text.match(vencRegex)
+      let vencimento: string | undefined = undefined
+      let registroComoDivida = false
+      if (vencMatch) {
+        // tentar normalizar para ISO (YYYY-MM-DD) quando possível
+        const raw = vencMatch[1]
+        const parts = raw.split(/[\/\-]/).map((p) => parseInt(p, 10))
+        if (parts.length >= 2) {
+          let day = parts[0]
+          let month = parts[1]
+          let year = parts.length === 3 ? parts[2] : new Date().getFullYear()
+          if (year < 100) year += 2000
+          // criar string ISO simples (não ajustar timezone)
+          try {
+            const iso = new Date(year, month - 1, day)
+            if (!isNaN(iso.getTime())) {
+              vencimento = iso.toISOString().split('T')[0]
+              registroComoDivida = true
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+
       return {
         tipo: 'despesa',
         nome,
@@ -123,6 +153,8 @@ export function parseMessage(body: string): ParsedTransaction | null {
         conta: 'Nubank',
         confianca: 85,
         mensagemOriginal: text,
+        registroComoDivida,
+        vencimento,
       }
     }
   }

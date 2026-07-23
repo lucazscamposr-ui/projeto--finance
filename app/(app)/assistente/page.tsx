@@ -110,8 +110,20 @@ export default function AssistentePage() {
       if (parsed) {
         // Registrar a transação no contexto financeiro
         const hoje = new Date().toISOString().split('T')[0]
-
-        if (parsed.tipo === 'despesa') {
+        // Se a mensagem indica vencimento/parcelamento, registrar como dívida
+        if (parsed.registroComoDivida || parsed.vencimento) {
+          // pessoa: usar a descrição para facilitar
+          const pessoa = parsed.nome || 'Dívida'
+          const venc = parsed.vencimento || hoje
+          addDivida({
+            pessoa,
+            total: parsed.valor,
+            vencimento: venc,
+            prioridade: 'média',
+          })
+          aiReply = `💸 **Dívida registrada!**\n\n📝 **Descrição:** ${parsed.nome}\n💵 **Total:** ${parsed.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\n📅 **Vencimento:** ${venc}\n\n✅ Adicionei ao seu painel de dívidas.`
+          registrou = true
+        } else if (parsed.tipo === 'despesa') {
           addDespesa({
             nome: parsed.nome,
             categoria: parsed.categoria,
@@ -120,6 +132,8 @@ export default function AssistentePage() {
             status: 'pago',
             conta: parsed.conta,
           })
+          aiReply = gerarRespostBot(parsed, text)
+          registrou = true
         } else {
           addReceita({
             nome: parsed.nome,
@@ -129,10 +143,9 @@ export default function AssistentePage() {
             status: 'pago',
             conta: parsed.conta,
           })
+          aiReply = gerarRespostBot(parsed, text)
+          registrou = true
         }
-
-        aiReply = gerarRespostBot(parsed, text)
-        registrou = true
       } else {
         // 2. Responder como assistente financeiro
         const lower = text.toLowerCase()

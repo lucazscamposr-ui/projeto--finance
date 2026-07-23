@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { eventosCalendario } from '@/lib/mock-data'
 import { formatCurrency } from '@/lib/format'
+import { useFinance } from '@/lib/finance-context'
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
@@ -17,7 +18,28 @@ export default function CalendarioPage() {
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ]
 
-  const eventosDoDia = (dia: number) => eventosCalendario.filter((e) => e.dia === dia)
+  const { despesas, dividas } = useFinance()
+
+  // Map dynamic events (despesas pendentes and dividas) into calendar events
+  const dynamicEventos = [
+    ...despesas
+      .filter((d) => d.status !== 'pago')
+      .map((d) => ({ dia: new Date(d.data).getDate(), titulo: d.nome, valor: d.valor, tipo: 'saida' as const })),
+    ...dividas
+      .map((v) => {
+        const dia = v.vencimento ? new Date(v.vencimento).getDate() : null
+        return dia
+          ? { dia, titulo: v.pessoa, valor: v.total - (v.pago || 0), tipo: 'saida' as const }
+          : null
+      })
+      .filter(Boolean) as { dia: number; titulo: string; valor: number; tipo: 'saida' }[],
+  ]
+
+  const eventosDoDia = (dia: number) => {
+    const staticEvt = eventosCalendario.filter((e) => e.dia === dia)
+    const dyn = dynamicEventos.filter((e) => e.dia === dia)
+    return [...staticEvt, ...dyn]
+  }
 
   return (
     <div className="mx-auto max-w-5xl">
